@@ -1,23 +1,25 @@
 {
   "name": "ai-starlist",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "pnpm exec tsx cli.ts fetch && pnpm exec tsx cli.ts classify && pnpm exec tsx cli.ts export"
-  },
+  "packageManager": "pnpm@10.12.4",
+  "description": "",
+  "author": "ryanuo <ryanuo@aliyun.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/ryanuo/ai-starlist#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ryanuo/ai-starlist.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/ryanuo/ai-starlist/issues"
   },
-  "homepage": "https://github.com/ryanuo/ai-starlist#readme",
-  "description": "",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm exec tsx cli.ts fetch && pnpm exec tsx cli.ts classify && pnpm exec tsx cli.ts export",
+    "lint": "pnpx eslint",
+    "lint:fix": "npx eslint --fix"
+  },
   "dependencies": {
     "axios": "^1.11.0",
     "chalk": "^5.4.1",
@@ -27,10 +29,11 @@
     "openai": "^5.10.2"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^4.18.0",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.1.0",
+    "eslint": "^9.31.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
-  },
-  "packageManager": "pnpm@10.12.4"
+  }
 }

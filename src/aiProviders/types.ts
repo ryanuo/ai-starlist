@@ -1,3 +1,3 @@
 export interface AIProvider {
-  classify(text: string): Promise<string>;
-} 
+  classify: (text: string) => Promise<string>
+}

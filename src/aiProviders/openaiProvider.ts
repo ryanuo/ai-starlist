@@ -1,20 +1,27 @@
-import { OpenAI } from 'openai';
-import { AIProvider } from './types';
+import type { AIProvider } from './types'
+import { OpenAI } from 'openai'
+import { buildPrompt } from './prompt'
 
 export class OpenAIProvider implements AIProvider {
-  private apiKey: string;
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  private apiKey: string
+  private g4fModel: string
+  private defaultBaseURL: string
+
+  constructor(apiKey: string, g4fModel: string, defaultBaseURL: string) {
+    this.apiKey = apiKey
+    this.g4fModel = g4fModel
+    this.defaultBaseURL = defaultBaseURL
   }
+
   async classify(text: string): Promise<string> {
-    const openai = new OpenAI({ apiKey: this.apiKey });
-    const prompt = `请为以下 GitHub 项目描述分配一个简明的分类（如：前端、后端、AI、工具、学习资料等）：\n"""${text}"""\n分类：`;
+    const openai = new OpenAI({ apiKey: this.apiKey, baseURL: this.defaultBaseURL })
+    const prompt = buildPrompt(text)
     const res = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: this.g4fModel,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 10,
       temperature: 0,
-    });
-    return res.choices[0].message.content?.trim() || '未分类';
+    })
+    return res.choices[0].message.content?.trim() || '未分类'
   }
-} 
+}
