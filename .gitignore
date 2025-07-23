@@ -1,0 +1,9 @@
+# 环境变量
+.env
+# 数据缓存和输出
+/data/
+# Node.js
+node_modules/
+# 日志
+npm-debug.log*
+pnpm-debug.log* 
