@@ -19,7 +19,6 @@ interface ClassifiedRepo extends StarRepo {
 
 function getAIProviderFromConfig(): AIProvider {
   const { aiProvider, openaiApiKey, llamaApiUrl, llamaModel, g4fApiUrl, g4fModel, openaiBaseURL, openaiModel } = getConfig()
-  console.log('aiProvider', { aiProvider, openaiApiKey, llamaApiUrl, llamaModel, g4fApiUrl, g4fModel, openaiBaseURL, openaiModel })
   if (aiProvider === 'llama') {
     return new LlamaProvider(llamaApiUrl, llamaModel)
   }
