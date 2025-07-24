@@ -41,14 +41,14 @@ function parseBatchResult(batch: StarRepo[], aiResult: string): string[] {
   const lines = aiResult.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
   const map: Record<string, string> = {}
   lines.forEach((line) => {
-    // Use a more efficient and safe regex to avoid catastrophic backtracking
-    // and handle full-width colon (U+FF1A) robustly.
+    // 1. repo名：分类
     const m = line.match(/^([^：]+)：(.+)$/)
     if (m) {
       map[m[1].trim()] = m[2].trim()
     }
   })
-  return batch.map(repo => map[repo.full_name] || '未分类')
+  const result: string[] = batch.map(repo => map[repo.full_name] || '')
+  return result
 }
 
 export async function classifyStars() {

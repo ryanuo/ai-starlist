@@ -1,7 +1,7 @@
 import process from 'node:process'
 import dotenv from 'dotenv'
 
-dotenv.config()
+dotenv.config({ override: true })
 
 export interface Config {
   githubToken: string
@@ -17,7 +17,6 @@ export interface Config {
 }
 
 export function getConfig(): Config {
-  console.log('process.env', process.env)
   const githubToken = process.env.GITHUB_TOKEN || ''
   const githubUsername = process.env.GITHUB_USERNAME || ''
   const aiProvider = process.env.AI_PROVIDER || 'openai'

@@ -18,10 +18,13 @@ export class OpenAIProvider implements AIProvider {
     const prompt = buildPrompt(text)
     const res = await openai.chat.completions.create({
       model: this.g4fModel,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 10,
-      temperature: 0,
+      messages: [
+        { role: 'system', content: '你是一个优秀的开源项目分类器' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.4,
     })
+    console.log('OpenAI 分类结果：', res.choices[0].message.content)
     return res.choices[0].message.content?.trim() || '未分类'
   }
 }
