@@ -18,7 +18,12 @@ export async function fetchStars() {
     )
     if (res.data.length === 0)
       break
-    stars = stars.concat(res.data)
+    stars = stars.concat(res.data?.map((res: any) => ({
+      full_name: res.full_name,
+      description: res.description || '',
+      html_url: res.html_url,
+    })))
+
     if (res.data.length < perPage)
       break
     page++

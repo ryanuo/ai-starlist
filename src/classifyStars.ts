@@ -1,80 +1,77 @@
-import type { AIProvider } from './aiProviders/types'
 import path from 'node:path'
 import fs from 'fs-extra'
 import { G4FProvider } from './aiProviders/g4fProvider'
 import { LlamaProvider } from './aiProviders/llamaProvider'
 import { OpenAIProvider } from './aiProviders/openaiProvider'
 import { getConfig } from './config'
+import { fetchStars } from './fetchStars'
 
 interface StarRepo {
   full_name: string
   description: string
   html_url: string
-  [key: string]: any
+  category?: string
 }
 
-interface ClassifiedRepo extends StarRepo {
-  category: string
-}
+export function parseCSVtoCategoryMap(csvText: string): Map<string, string[]> {
+  const categoryMap = new Map<string, string[]>()
 
-function getAIProviderFromConfig(): AIProvider {
-  const { aiProvider, openaiApiKey, llamaApiUrl, llamaModel, g4fApiUrl, g4fModel, openaiBaseURL, openaiModel } = getConfig()
-  if (aiProvider === 'llama') {
-    return new LlamaProvider(llamaApiUrl, llamaModel)
-  }
-  if (aiProvider === 'g4f') {
-    return new G4FProvider(g4fApiUrl, g4fModel)
-  }
-  return new OpenAIProvider(openaiApiKey, openaiModel, openaiBaseURL)
-}
+  csvText
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line)
+    .forEach((line) => {
+      const [category, project] = line.split(',').map(part => part.trim())
+      if (!category || !project)
+        return
 
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const res: T[][] = []
-  for (let i = 0; i < arr.length; i += size) {
-    res.push(arr.slice(i, i + size))
-  }
-  return res
-}
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, [])
+      }
+      categoryMap.get(category)!.push(project)
+    })
 
-function parseBatchResult(batch: StarRepo[], aiResult: string): string[] {
-  // 解析 AI 返回的批量分类结果
-  const lines = aiResult.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
-  const map: Record<string, string> = {}
-  lines.forEach((line) => {
-    // 1. repo名：分类
-    const m = line.match(/^([^：]+)：(.+)$/)
-    if (m) {
-      map[m[1].trim()] = m[2].trim()
-    }
-  })
-  const result: string[] = batch.map(repo => map[repo.full_name] || '')
-  return result
+  return categoryMap
 }
 
 export async function classifyStars() {
-  const rawPath = path.resolve(__dirname, '../data/stars.raw.json')
-  const outPath = path.resolve(__dirname, '../data/stars.classified.json')
-  const stars: StarRepo[] = await fs.readJson(rawPath)
-  const results: ClassifiedRepo[] = []
-  const ai = getAIProviderFromConfig()
-  const batches = chunkArray(stars, 50)
-  for (const batch of batches) {
-    // 直接在这里生成 prompt
-    let prompt = ''
-    batch.forEach((repo, idx) => {
-      prompt += `${idx + 1}. ${repo.full_name}：${repo.description || ''}\n`
-    })
-    const aiResult = await ai.classify(prompt)
-    const categories = parseBatchResult(batch, aiResult)
-    batch.forEach((repo, i) => {
-      results.push({ ...repo, category: categories[i] })
-      console.log(`${repo.full_name} => ${categories[i]}`)
-    })
+  const config = getConfig()
+  let provider
+  if (config.aiProvider === 'openai') {
+    provider = new OpenAIProvider(config.openaiApiKey, config.openaiModel, config.openaiBaseURL)
   }
-  await fs.writeJson(outPath, results, { spaces: 2 })
-  return results
+  else if (config.aiProvider === 'llama') {
+    provider = new LlamaProvider(config.llamaApiUrl, config.llamaModel)
+  }
+  else if (config.aiProvider === 'g4f') {
+    provider = new G4FProvider(config.g4fApiUrl, config.g4fModel)
+  }
+  else {
+    throw new Error('未知 AI Provider')
+  }
+
+  // 优先读取本地 Star 项目
+  const rawPath = path.resolve(__dirname, '../data/stars.raw.json')
+  let stars: StarRepo[]
+  if (await fs.pathExists(rawPath)) {
+    stars = await fs.readJson(rawPath)
+  }
+  else {
+    stars = await fetchStars()
+  }
+
+  // 构造分类文本
+  const text = stars.map(repo => `${repo.full_name}: ${repo.description}`).join('')
+  // AI 分类
+  const result = await provider.classify(text)
+
+  // 保存分类结果
+  const outPath = path.resolve(__dirname, '../data/stars.classified.json')
+  await fs.writeJson(outPath, result, { spaces: 2 })
+  console.log('分类结果已保存到 data/stars.classified.json')
+  return result
 }
 
 if (require.main === module) {
-  classifyStars().then(() => console.log('分类结果已保存到 data/stars.classified.json')).catch(console.error)
+  classifyStars().catch(console.error)
 }

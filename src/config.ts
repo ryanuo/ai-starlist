@@ -29,7 +29,7 @@ export function getConfig(): Config {
   // OpenAI
   const openaiApiKey = process.env.OPENAI_API_KEY || ''
   const openaiModel = process.env.OPENAI_MODEL || 'gpt-4.1-mini'
-  const openaiBaseURL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
+  const openaiBaseURL = process.env.OPENAI_BASE_URL || 'https://api.openai.com'
 
   if (!githubToken || !githubUsername) {
     throw new Error('请在 .env 文件中配置 GITHUB_TOKEN、GITHUB_USERNAME')

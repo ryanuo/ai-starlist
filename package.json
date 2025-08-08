@@ -16,15 +16,18 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm exec tsx cli.ts fetch && pnpm exec tsx cli.ts classify && pnpm exec tsx cli.ts export",
+    "dev": "esno cli.ts fetch && esno cli.ts classify && esno cli.ts export",
     "lint": "pnpx eslint",
-    "lint:fix": "npx eslint --fix"
+    "lint:fix": "npx eslint --fix",
+    "fetch": "esno cli.ts fetch",
+    "classify": "esno cli.ts classify"
   },
   "dependencies": {
     "axios": "^1.11.0",
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
     "dotenv": "^17.2.0",
+    "esno": "^4.8.0",
     "fs-extra": "^11.3.0",
     "openai": "^5.10.2"
   },
